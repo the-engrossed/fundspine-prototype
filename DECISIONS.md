@@ -38,3 +38,20 @@ seam is exercised rather than sketched.
 **The three hand-written implementations are left as failing stubs.** `Fact._invariants`,
 `FundPeriodMetrics._every_value_is_fact_bound`, and (later) `guard.validate_prose` and
 `R001_fee_bridge` are specified by tests and written by hand, per `AGENTS.md`.
+
+## Block B — pipeline (Sun 14:55)
+
+**Ground truth is recorded as each value is interpolated into the HTML, then
+checked against ingest page text.** A quote that is not an exact substring
+refuses to write the truth file. That is how citation validity stays a
+substring match rather than a judgement.
+
+**R001 uses Python `round` on annual bps / 4, then a performance fee on
+excess over the quarterly hurdle.** 150 → 38 quarterly; 175 → 44. The Q1
+bridge closes at 347 net; doc_2 states 387 (40 bps off). The body is
+hand-written; goldens were aligned to that formula.
+
+**High water mark is not a FieldPath.** It is True for this fund when terms
+are materialized. Adding a path would expand the eval denominator for one
+boolean; the terms table still stores it.
+

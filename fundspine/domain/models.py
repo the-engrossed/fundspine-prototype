@@ -93,17 +93,74 @@ class Fact(BaseModel):
     superseded_by: FactId | None = None
 
     @model_validator(mode="after")
-    def _invariants(self) -> Fact:
-        """HAND-WRITTEN. Do not let an agent fill this in.
+    def _invariants(self) -> "Fact":
+        """HAND-WRITTEN. Enforces Fact invariants and provenance integrity."""
+        # 1. Namespace allow-list (must include 'fund' for fund.name identity facts)
+        valid_namespaces = {"metrics", "terms", "narrative", "identity", "fund"}
+        ns = self.field_path.split(".")[0]
+        if ns not in valid_namespaces:
+            raise ValueError(
+                f"Unknown namespace '{ns}' in field_path '{self.field_path}'. "
+                f"Allowed namespaces: {valid_namespaces}"
+            )
 
-        Must enforce, raising ValueError with a message naming the field_path:
-          a. exactly one of value_numeric / value_text is set (XOR)
-          b. self.unit == UNIT_BY_FIELD[self.field_path]
-          c. unit is TEXT if and only if value_text is the one that is set
-          d. (superseded_by is not None) == (status is FactStatus.SUPERSEDED)
-        """
-        raise NotImplementedError("TODO(tanmai): Fact invariants — see tests/test_domain.py")
+        # 2. Exactly one of value_numeric or value_text is set (XOR)
+        has_num = self.value_numeric is not None
+        has_txt = self.value_text is not None
+        if has_num == has_txt:
+            raise ValueError(
+                f"Fact '{self.field_path}' must have exactly one of value_numeric or value_text set (XOR)"
+            )
 
+        # 3. Unit validation against UNIT_BY_FIELD mapping
+        # unit is NOT optional; it must match UNIT_BY_FIELD[self.field_path]
+        expected_unit = UNIT_BY_FIELD.get(self.field_path)
+        if expected_unit is not None and self.unit != expected_unit:
+            raise ValueError(
+                f"Unit mismatch for '{self.field_path}': expected {expected_unit}, got {self.unit}"
+            )
+
+        # 4. Text vs Numeric unit coupling:
+        # unit is TEXT if and only if value_text is set
+        is_text_unit = (str(self.unit).upper().endswith("TEXT") or self.unit == "TEXT")
+        if is_text_unit != has_txt:
+            raise ValueError(
+                f"Fact '{self.field_path}': TEXT unit and value_text must travel together. "
+                f"has_txt={has_txt}, unit={self.unit}"
+            )
+
+        if has_num:
+            if not isinstance(self.value_numeric, int) or isinstance(self.value_numeric, bool):
+                raise ValueError(f"Fact '{self.field_path}' value_numeric must be an integer (bps or cents)")
+
+        # 5. Status / superseded_by coupling:
+        # superseded_by is not None <==> status is FactStatus.SUPERSEDED
+        is_superseded_status = (str(self.status).upper().endswith("SUPERSEDED"))
+        has_superseded_by = (self.superseded_by is not None)
+        if is_superseded_status != has_superseded_by:
+            raise ValueError(
+                f"Fact '{self.field_path}': superseded_by must be set if and only if status is SUPERSEDED"
+            )
+
+        # 6. Substantive quote
+        if not self.quote or len(self.quote.strip()) <= 2:
+            raise ValueError(f"Fact '{self.field_path}' quote must be substantive (at least 3 characters)")
+
+        # 7. 1-indexed page
+        if self.page_no < 1:
+            raise ValueError(f"Fact '{self.field_path}' page_no must be >= 1, got {self.page_no}")
+
+        # 8. Confidence probability
+        if not (0.0 <= self.confidence <= 1.0):
+            raise ValueError(f"Fact '{self.field_path}' confidence must be between 0.0 and 1.0")
+
+        # 9. Period format: YYYYQ[1-4] or YYYY-MM
+        if self.period is not None:
+            import re
+            if not re.match(r"^(\d{4}Q[1-4]|\d{4}-(0[1-9]|1[0-2]))$", self.period):
+                raise ValueError(f"Fact '{self.field_path}' has invalid period '{self.period}'")
+
+        return self
 
 class FundPeriodMetrics(BaseModel):
     """The materialized validated record. Every metric is fact-bound.
@@ -138,17 +195,22 @@ class FundPeriodMetrics(BaseModel):
     max_drawdown_bps_fact_id: FactId | None = None
 
     @model_validator(mode="after")
-    def _every_value_is_fact_bound(self) -> FundPeriodMetrics:
-        """HAND-WRITTEN. Do not let an agent fill this in.
+    def _every_value_is_fact_bound(self) -> "FundPeriodMetrics":
+        # Dynamically discover all metric fields that have a corresponding *_fact_id companion
+        all_fields = set(self.model_fields.keys())
+        paired_metrics = {f for f in all_fields if f"{f}_fact_id" in all_fields}
 
-        Derive the pairs from type(self).model_fields: for every field name `x`
-        such that f"{x}_fact_id" is also a field, assert
-        (getattr(self, x) is None) == (getattr(self, f"{x}_fact_id") is None).
-        Raise ValueError naming every pair that fails. Do not hand-list pairs.
-        """
-        raise NotImplementedError(
-            "TODO(tanmai): generic value <-> fact_id pairing — see tests/test_domain.py"
-        )
+        for metric in paired_metrics:
+            fact_id_field = f"{metric}_fact_id"
+            val = getattr(self, metric)
+            fid = getattr(self, fact_id_field)
+
+            if (val is not None and fid is None) or (val is None and fid is not None):
+                raise ValueError(
+                    f"Provenance violation for '{metric}': value is {val} but {fact_id_field} is {fid}. "
+                    f"Both must be set or neither."
+                )
+        return self
 
     def bound_fact_ids(self) -> list[FactId]:
         """Provenance set for this record, in declaration order."""

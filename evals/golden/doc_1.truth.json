@@ -1,0 +1,152 @@
+{
+  "stem": "doc_1",
+  "doc_type": "tearsheet",
+  "period": "2026Q1",
+  "published_on": "2026-04-12",
+  "facts": [
+    {
+      "field_path": "fund.name",
+      "value_numeric": null,
+      "value_text": "Meridian Systematic Macro Fund",
+      "unit": "text",
+      "period": null,
+      "page_no": 1,
+      "quote": "Meridian Systematic Macro Fund"
+    },
+    {
+      "field_path": "fund.manager_name",
+      "value_numeric": null,
+      "value_text": "Meridian Capital Management",
+      "unit": "text",
+      "period": null,
+      "page_no": 1,
+      "quote": "Meridian Capital Management"
+    },
+    {
+      "field_path": "fund.strategy_family",
+      "value_numeric": null,
+      "value_text": "Systematic Global Macro",
+      "unit": "text",
+      "period": null,
+      "page_no": 1,
+      "quote": "Systematic Global Macro"
+    },
+    {
+      "field_path": "fund.share_class",
+      "value_numeric": null,
+      "value_text": "Class A",
+      "unit": "text",
+      "period": null,
+      "page_no": 1,
+      "quote": "Class A"
+    },
+    {
+      "field_path": "metrics.gross_return_bps",
+      "value_numeric": 450,
+      "value_text": null,
+      "unit": "bps",
+      "period": "2026Q1",
+      "page_no": 1,
+      "quote": "Gross return for the quarter was 4.50%."
+    },
+    {
+      "field_path": "metrics.net_return_bps",
+      "value_numeric": 347,
+      "value_text": null,
+      "unit": "bps",
+      "period": "2026Q1",
+      "page_no": 1,
+      "quote": "Net return for the quarter was 3.47%."
+    },
+    {
+      "field_path": "metrics.ytd_return_bps",
+      "value_numeric": 347,
+      "value_text": null,
+      "unit": "bps",
+      "period": "2026Q1",
+      "page_no": 1,
+      "quote": "Year-to-date net return was 3.47%."
+    },
+    {
+      "field_path": "metrics.nav_usd_cents",
+      "value_numeric": 12843000000,
+      "value_text": null,
+      "unit": "usd_cents",
+      "period": "2026Q1",
+      "page_no": 1,
+      "quote": "Net asset value at 31 March 2026 was $128,430,000.00."
+    },
+    {
+      "field_path": "metrics.sharpe_36m",
+      "value_numeric": 14200,
+      "value_text": null,
+      "unit": "ratio_bps",
+      "period": "2026Q1",
+      "page_no": 2,
+      "quote": "The thirty-six month Sharpe ratio was 1.42."
+    },
+    {
+      "field_path": "metrics.max_drawdown_bps",
+      "value_numeric": -1150,
+      "value_text": null,
+      "unit": "bps",
+      "period": "2026Q1",
+      "page_no": 2,
+      "quote": "Maximum drawdown over the same window was -11.50%."
+    },
+    {
+      "field_path": "terms.mgmt_fee_bps",
+      "value_numeric": 150,
+      "value_text": null,
+      "unit": "bps",
+      "period": null,
+      "page_no": 2,
+      "quote": "Management fee 1.50% per annum."
+    },
+    {
+      "field_path": "terms.perf_fee_bps",
+      "value_numeric": 2000,
+      "value_text": null,
+      "unit": "bps",
+      "period": null,
+      "page_no": 2,
+      "quote": "Performance fee 20.00% of profits."
+    },
+    {
+      "field_path": "terms.hurdle_bps",
+      "value_numeric": 500,
+      "value_text": null,
+      "unit": "bps",
+      "period": null,
+      "page_no": 2,
+      "quote": "Hurdle rate 5.00% per annum."
+    },
+    {
+      "field_path": "terms.lockup_months",
+      "value_numeric": 12,
+      "value_text": null,
+      "unit": "months",
+      "period": null,
+      "page_no": 2,
+      "quote": "Lockup period 12 months."
+    },
+    {
+      "field_path": "terms.notice_days",
+      "value_numeric": 90,
+      "value_text": null,
+      "unit": "days",
+      "period": null,
+      "page_no": 2,
+      "quote": "Redemption notice 90 days."
+    },
+    {
+      "field_path": "narrative.strategy",
+      "value_numeric": null,
+      "value_text": "Meridian Systematic Macro Fund implements a systematic global macro programme spanning rates, currencies, equity indices and commodities. Signals combine trend-following, carry and relative-value features, sized by inverse volatility and capped by a portfolio risk budget. The book is expressed exclusively through exchange-traded futures; there is no cash equity, no OTC derivative and no private credit sleeve. Diversification comes from forty liquid futures markets rather than from a large number of correlated equity names. Positions are initiated and retired by rule, not by a discretionary overlay, and the same rule set applies in every region. The objective is a return stream with low correlation to traditional balanced portfolios and a drawdown profile that is acceptable to family offices and wealth platforms. Liquidity is daily at the instrument level; investor liquidity is governed by the lockup and notice provisions in the terms. The research group at Meridian Capital Management continues to harvest new markets only when a contract clears the programme's liquidity and cost filters. Capacity is managed conservatively relative to firm assets so that market impact does not become the binding constraint.",
+      "unit": "text",
+      "period": null,
+      "page_no": 3,
+      "quote": "Diversification comes from forty liquid futures markets"
+    }
+  ]
+}
