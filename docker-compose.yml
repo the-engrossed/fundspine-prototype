@@ -1,0 +1,20 @@
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: fundspine-postgres
+    environment:
+      POSTGRES_USER: fundspine
+      POSTGRES_PASSWORD: fundspine
+      POSTGRES_DB: fundspine
+    ports:
+      - "5433:5432"
+    volumes:
+      - fundspine-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U fundspine -d fundspine"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+volumes:
+  fundspine-pgdata:

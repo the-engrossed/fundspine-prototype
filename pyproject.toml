@@ -1,0 +1,59 @@
+[project]
+name = "fundspine"
+version = "0.1.0"
+description = "Document in, cited facts, validated record, per-partner artifact out."
+requires-python = ">=3.12"
+dependencies = [
+    "pydantic>=2.9,<3",
+    "sqlalchemy>=2.0.35,<3",
+    "alembic>=1.13,<2",
+    "psycopg[binary]>=3.2,<4",
+    "beautifulsoup4>=4.12,<5",
+    "jinja2>=3.1,<4",
+    "fastapi>=0.115,<1",
+    "uvicorn[standard]>=0.30,<1",
+    "openai>=1.50,<2",
+    "python-dotenv>=1.0,<2",
+    "opentelemetry-api>=1.27,<2",
+    "opentelemetry-sdk>=1.27,<2",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.3,<9",
+    "ruff>=0.6,<1",
+    "mypy>=1.11,<2",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["fundspine"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM", "ANN"]
+ignore = ["ANN401"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["ANN"]
+"alembic/*" = ["ANN", "E501"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+plugins = ["pydantic.mypy"]
+exclude = "^(alembic/|build/)"
+
+[[tool.mypy.overrides]]
+module = ["bs4.*"]
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
