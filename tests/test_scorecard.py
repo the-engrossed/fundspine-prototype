@@ -1,4 +1,4 @@
-from evals.scorecard import ExtractedField, required_recall, score_document
+from evals.scorecard import ExtractedField, dump_scorecard, required_recall, score_document
 from fundspine.ingest.loader import Page
 
 
@@ -51,3 +51,6 @@ def test_scorecard_exact_match_and_citation() -> None:
     assert score.exact["metrics.net_return_bps@2026Q1"] is True
     assert score.exact["metrics.gross_return_bps@2026Q1"] is False
     assert required_recall(score) == 1.0
+    payload = dump_scorecard([score], prompt_version="v1")
+    assert payload["prompt_version"] == "v1"
+    assert payload["documents"][0]["misses"][0]["field"] == "metrics.gross_return_bps@2026Q1"

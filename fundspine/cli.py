@@ -8,12 +8,32 @@ def main(argv: list[str] | None = None) -> None:
     if not args:
         raise SystemExit("usage: python -m fundspine.cli <ingest|render|drift|costs>")
     command = args[0]
+    if command == "render":
+        from fundspine.render.run import render_all
+
+        render_all()
+        return
     if command == "ingest":
         from fundspine.ingest.run import ingest_golden
 
         ingest_golden()
         return
-    if command in {"render", "drift", "costs"}:
+    if command == "drift":
+        from fundspine.drift.router import blocking, route
+        from fundspine.drift.rules import D101_restatement, D103_terms_change
+        from fundspine.render.from_golden import facts_from_golden
+
+        prior = facts_from_golden("doc_1")
+        incoming = facts_from_golden("doc_3")
+        findings = D101_restatement(prior, incoming) + D103_terms_change(prior, incoming)
+        for item in findings:
+            print(
+                f"{item.rule_id}\t{item.field_path.value}\t{item.period}\t"
+                f"{item.prior_value}->{item.new_value}\t{route(item).value}"
+            )
+        print(f"{len(blocking(findings))} blocking event(s)")
+        return
+    if command == "costs":
         raise NotImplementedError(f"{command} is not built yet")
     raise SystemExit(f"unknown command: {command}")
 

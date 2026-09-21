@@ -55,3 +55,39 @@ hand-written; goldens were aligned to that formula.
 are materialized. Adding a path would expand the eval denominator for one
 boolean; the terms table still stores it.
 
+## Block D — render (Sun 18:50)
+
+**Prose is a tone-enum sentence pair, not a live LLM call.** Billing was
+exhausted and Moment 1 cannot wait on it. Numbers still enter only as
+`[[fact:<uuid>]]`; the guard contract is unchanged. A prose model is a
+drop-in behind `write_prose`.
+
+**Templates call `f()`; the model never emits a digit.** Partner HTML is
+branded from a `PartnerConfig` row (Apex navy/warm, Ridgeline slate/terse).
+Identical figures, different voice. Provenance appendix lists page and
+quote for every fact `f()` touched.
+
+**`validate_prose` is hand-written against `tests/test_guard.py`.** Render
+concatenates the disclosure onto the marked prose before the guard so G4
+is a substring check rather than a template concern.
+
+## Block C — v1 extract (Sun 20:13)
+
+**Committed `evals/scorecards/v1_before.json` before any prompt edit.**
+Citation validity 100%. Required recall 86.67% / 86.67% / 81.25%. The
+misses are Sharpe and max drawdown with `period` null (values are
+correct) plus `fund.share_class` on doc_3. R001 fires on doc_2 (40 bps).
+v2 is a new prompt file, not an edit of v1.
+
+## Block E — drift (Sun 18:50)
+
+**D101 keys on (field_path, period) and ignores standing terms
+(`period is None`).** Q1 NAV moving on the Q2 document is the restatement.
+**D103 is the management-fee row only.** 150 → 175 is Moment 2; other terms
+did not change.
+
+**Blocking refuses partner 2026Q2 HTML and still renders the IC memo.**
+The memo table shows formatted prior and new values, not raw integers.
+The IC binder is doc_3 only so `f()` is unambiguous; both NAV figures
+appear via `format_fact` on the drift pair.
+

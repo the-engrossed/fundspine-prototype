@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <title>IC memorandum · {{ fund_name }} · {{ plan.period }}</title>
+  <style>
+    body { font-family: "Iowan Old Style", Palatino, serif; margin: 0; background: #eef1f4; color: #1b2430; }
+    header { background: #1b2430; color: white; padding: 28px 48px; }
+    header p { margin: 0; letter-spacing: .14em; text-transform: uppercase; font-size: 11px; opacity: .85; }
+    header h1 { margin: 8px 0 0; font-size: 26px; }
+    main { max-width: 760px; margin: 0 auto; padding: 36px 48px 64px; background: white; }
+    h2 { font-size: 12px; letter-spacing: .16em; text-transform: uppercase; color: #8a1c1c; }
+    table { width: 100%; border-collapse: collapse; font-size: 15px; }
+    th, td { text-align: left; padding: 8px 0; border-bottom: 1px solid #d5dbe3; }
+    td.num { text-align: right; font-variant-numeric: tabular-nums; }
+    .prose { font-size: 16px; line-height: 1.55; }
+    .conflict { background: #fdecea; padding: 16px 20px; margin: 24px 0; }
+    footer { margin-top: 40px; font-size: 12px; color: #5c6b7a; border-top: 1px solid #d5dbe3; padding-top: 16px; }
+  </style>
+</head>
+<body>
+  <header>
+    <p>Internal · Investment committee</p>
+    <h1>{{ fund_name }}</h1>
+  </header>
+  <main>
+    <p class="prose">{{ prose }}</p>
+    {% if findings %}
+    <div class="conflict">
+      <h2>Open conflicts — partner distribution is refused</h2>
+      <table>
+        <tr><th>Rule</th><th>Field</th><th class="num">Prior</th><th class="num">New</th></tr>
+        {% for item in findings %}
+        <tr>
+          <td>{{ item.rule_id }}</td>
+          <td>{{ item.field_path }} @ {{ item.period }}</td>
+          <td class="num">{{ item.prior_display }}</td>
+          <td class="num">{{ item.new_display }}</td>
+        </tr>
+        {% endfor %}
+      </table>
+    </div>
+    {% endif %}
+    <h2>Period figures</h2>
+    <table>
+      <tr><th>Gross return</th><td class="num">{{ f("metrics.gross_return_bps", period=plan.period) }}</td></tr>
+      <tr><th>Net return</th><td class="num">{{ f("metrics.net_return_bps", period=plan.period) }}</td></tr>
+      <tr><th>NAV this period</th><td class="num">{{ f("metrics.nav_usd_cents", fmt="usd", period=plan.period) }}</td></tr>
+      <tr><th>Management fee</th><td class="num">{{ f("terms.mgmt_fee_bps") }}</td></tr>
+    </table>
+    <footer>{{ disclosure }}</footer>
+  </main>
+</body>
+</html>

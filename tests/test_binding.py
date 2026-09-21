@@ -11,7 +11,7 @@ def _validated(**overrides: object):
 
 def test_f_formats_bps_as_percent() -> None:
     fact = _validated(value_numeric=347)
-    binder = FactBinder({FieldPath.METRICS_NET_RETURN_BPS: fact})
+    binder = FactBinder([fact])
     assert binder.f("metrics.net_return_bps") == "3.47%"
     assert binder.used_fact_ids == [fact.fact_id]
 
@@ -29,24 +29,36 @@ def test_f_formats_money_and_sharpe() -> None:
         unit=Unit.RATIO_BPS,
         quote="The thirty-six month Sharpe ratio was 1.42.",
     )
-    binder = FactBinder(
-        {
-            FieldPath.METRICS_NAV_USD_CENTS: nav,
-            FieldPath.METRICS_SHARPE_36M: sharpe,
-        }
-    )
+    binder = FactBinder([nav, sharpe])
     assert binder.f("metrics.nav_usd_cents", fmt="usd") == "$128,430,000.00"
     assert binder.f("metrics.sharpe_36m", fmt="ratio") == "1.42"
 
 
 def test_candidate_facts_do_not_bind() -> None:
     fact = make_fact()
-    binder = FactBinder({FieldPath.METRICS_NET_RETURN_BPS: fact})
+    binder = FactBinder([fact])
     with pytest.raises(UnboundFactError, match="metrics.net_return_bps"):
         binder.f("metrics.net_return_bps")
 
 
 def test_missing_path_fails_loudly() -> None:
-    binder = FactBinder({})
+    binder = FactBinder([])
     with pytest.raises(UnboundFactError, match="metrics.gross_return_bps"):
         binder.f("metrics.gross_return_bps")
+
+
+def test_ambiguous_path_without_period_fails_loudly() -> None:
+    q1 = _validated(
+        value_numeric=347,
+        period="2026Q1",
+        quote="Net return for the quarter was 3.47%.",
+    )
+    q2 = _validated(
+        value_numeric=157,
+        period="2026Q2",
+        quote="Net return for the quarter was 1.57%.",
+    )
+    binder = FactBinder([q1, q2])
+    with pytest.raises(UnboundFactError, match="ambiguous"):
+        binder.f("metrics.net_return_bps")
+    assert binder.f("metrics.net_return_bps", period="2026Q1") == "3.47%"

@@ -101,3 +101,34 @@ def render_scorecard(scores: list[DocScore]) -> str:
             f"{exact_hits}/{score.truth_count} | {score.extracted_count} |"
         )
     return "\n".join(lines) + "\n"
+
+
+def dump_scorecard(scores: list[DocScore], *, prompt_version: str) -> dict[str, Any]:
+    """JSON shape for committed scorecard history and Loom diffs."""
+    documents: list[dict[str, Any]] = []
+    for score in scores:
+        exact_hits = sum(1 for ok in score.exact.values() if ok)
+        misses = [
+            {
+                "field": label,
+                "recall": score.recall[label],
+                "exact": score.exact[label],
+            }
+            for label in score.recall
+            if not score.recall[label] or not score.exact[label]
+        ]
+        documents.append(
+            {
+                "stem": score.stem,
+                "citation_validity": score.citation_valid,
+                "required_recall": required_recall(score),
+                "exact_matches": exact_hits,
+                "truth_count": score.truth_count,
+                "extracted_count": score.extracted_count,
+                "citation_hits": score.citation_hits,
+                "misses": misses,
+                "recall": score.recall,
+                "exact": score.exact,
+            }
+        )
+    return {"prompt_version": prompt_version, "documents": documents}

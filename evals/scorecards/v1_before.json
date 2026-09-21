@@ -1,0 +1,183 @@
+{
+  "prompt_version": "v1",
+  "documents": [
+    {
+      "stem": "doc_1",
+      "citation_validity": 1.0,
+      "required_recall": 0.8666666666666667,
+      "exact_matches": 14,
+      "truth_count": 16,
+      "extracted_count": 16,
+      "citation_hits": 16,
+      "misses": [
+        {
+          "field": "metrics.sharpe_36m@2026Q1",
+          "recall": false,
+          "exact": false
+        },
+        {
+          "field": "metrics.max_drawdown_bps@2026Q1",
+          "recall": false,
+          "exact": false
+        }
+      ],
+      "recall": {
+        "fund.name": true,
+        "fund.manager_name": true,
+        "fund.strategy_family": true,
+        "fund.share_class": true,
+        "metrics.gross_return_bps@2026Q1": true,
+        "metrics.net_return_bps@2026Q1": true,
+        "metrics.ytd_return_bps@2026Q1": true,
+        "metrics.nav_usd_cents@2026Q1": true,
+        "metrics.sharpe_36m@2026Q1": false,
+        "metrics.max_drawdown_bps@2026Q1": false,
+        "terms.mgmt_fee_bps": true,
+        "terms.perf_fee_bps": true,
+        "terms.hurdle_bps": true,
+        "terms.lockup_months": true,
+        "terms.notice_days": true,
+        "narrative.strategy": true
+      },
+      "exact": {
+        "fund.name": true,
+        "fund.manager_name": true,
+        "fund.strategy_family": true,
+        "fund.share_class": true,
+        "metrics.gross_return_bps@2026Q1": true,
+        "metrics.net_return_bps@2026Q1": true,
+        "metrics.ytd_return_bps@2026Q1": true,
+        "metrics.nav_usd_cents@2026Q1": true,
+        "metrics.sharpe_36m@2026Q1": false,
+        "metrics.max_drawdown_bps@2026Q1": false,
+        "terms.mgmt_fee_bps": true,
+        "terms.perf_fee_bps": true,
+        "terms.hurdle_bps": true,
+        "terms.lockup_months": true,
+        "terms.notice_days": true,
+        "narrative.strategy": true
+      }
+    },
+    {
+      "stem": "doc_2",
+      "citation_validity": 1.0,
+      "required_recall": 0.8666666666666667,
+      "exact_matches": 14,
+      "truth_count": 16,
+      "extracted_count": 16,
+      "citation_hits": 16,
+      "misses": [
+        {
+          "field": "metrics.sharpe_36m@2026Q1",
+          "recall": false,
+          "exact": false
+        },
+        {
+          "field": "metrics.max_drawdown_bps@2026Q1",
+          "recall": false,
+          "exact": false
+        }
+      ],
+      "recall": {
+        "fund.name": true,
+        "fund.manager_name": true,
+        "fund.strategy_family": true,
+        "fund.share_class": true,
+        "metrics.gross_return_bps@2026Q1": true,
+        "metrics.net_return_bps@2026Q1": true,
+        "metrics.ytd_return_bps@2026Q1": true,
+        "metrics.nav_usd_cents@2026Q1": true,
+        "metrics.sharpe_36m@2026Q1": false,
+        "metrics.max_drawdown_bps@2026Q1": false,
+        "terms.mgmt_fee_bps": true,
+        "terms.perf_fee_bps": true,
+        "terms.hurdle_bps": true,
+        "terms.lockup_months": true,
+        "terms.notice_days": true,
+        "narrative.strategy": true
+      },
+      "exact": {
+        "fund.name": true,
+        "fund.manager_name": true,
+        "fund.strategy_family": true,
+        "fund.share_class": true,
+        "metrics.gross_return_bps@2026Q1": true,
+        "metrics.net_return_bps@2026Q1": true,
+        "metrics.ytd_return_bps@2026Q1": true,
+        "metrics.nav_usd_cents@2026Q1": true,
+        "metrics.sharpe_36m@2026Q1": false,
+        "metrics.max_drawdown_bps@2026Q1": false,
+        "terms.mgmt_fee_bps": true,
+        "terms.perf_fee_bps": true,
+        "terms.hurdle_bps": true,
+        "terms.lockup_months": true,
+        "terms.notice_days": true,
+        "narrative.strategy": true
+      }
+    },
+    {
+      "stem": "doc_3",
+      "citation_validity": 1.0,
+      "required_recall": 0.8125,
+      "exact_matches": 14,
+      "truth_count": 17,
+      "extracted_count": 17,
+      "citation_hits": 17,
+      "misses": [
+        {
+          "field": "fund.share_class",
+          "recall": false,
+          "exact": false
+        },
+        {
+          "field": "metrics.sharpe_36m@2026Q2",
+          "recall": false,
+          "exact": false
+        },
+        {
+          "field": "metrics.max_drawdown_bps@2026Q2",
+          "recall": false,
+          "exact": false
+        }
+      ],
+      "recall": {
+        "fund.name": true,
+        "fund.manager_name": true,
+        "fund.strategy_family": true,
+        "fund.share_class": false,
+        "metrics.gross_return_bps@2026Q2": true,
+        "metrics.net_return_bps@2026Q2": true,
+        "metrics.ytd_return_bps@2026Q2": true,
+        "metrics.nav_usd_cents@2026Q2": true,
+        "metrics.nav_usd_cents@2026Q1": true,
+        "metrics.sharpe_36m@2026Q2": false,
+        "metrics.max_drawdown_bps@2026Q2": false,
+        "terms.mgmt_fee_bps": true,
+        "terms.perf_fee_bps": true,
+        "terms.hurdle_bps": true,
+        "terms.lockup_months": true,
+        "terms.notice_days": true,
+        "narrative.strategy": true
+      },
+      "exact": {
+        "fund.name": true,
+        "fund.manager_name": true,
+        "fund.strategy_family": true,
+        "fund.share_class": false,
+        "metrics.gross_return_bps@2026Q2": true,
+        "metrics.net_return_bps@2026Q2": true,
+        "metrics.ytd_return_bps@2026Q2": true,
+        "metrics.nav_usd_cents@2026Q2": true,
+        "metrics.nav_usd_cents@2026Q1": true,
+        "metrics.sharpe_36m@2026Q2": false,
+        "metrics.max_drawdown_bps@2026Q2": false,
+        "terms.mgmt_fee_bps": true,
+        "terms.perf_fee_bps": true,
+        "terms.hurdle_bps": true,
+        "terms.lockup_months": true,
+        "terms.notice_days": true,
+        "narrative.strategy": true
+      }
+    }
+  ]
+}

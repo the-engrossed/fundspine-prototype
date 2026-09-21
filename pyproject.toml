@@ -43,6 +43,9 @@ ignore = ["ANN401"]
 [tool.ruff.lint.per-file-ignores]
 "tests/*" = ["ANN"]
 "alembic/*" = ["ANN", "E501"]
+"fundspine/domain/models.py" = ["E501", "UP037", "SIM102"]
+"fundspine/validate/rules.py" = ["E501"]
+"fundspine/render/guard.py" = ["E501"]
 
 [tool.mypy]
 python_version = "3.12"

@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <title>{{ partner.name }} · {{ fund_name }} · {{ plan.period }}</title>
+  <style>
+    body { font-family: "Iowan Old Style", Palatino, serif; margin: 0; background: {{ partner.paper }}; color: #1b2430; }
+    header { background: {{ partner.accent }}; color: white; padding: 28px 48px; }
+    header p { margin: 0; letter-spacing: .14em; text-transform: uppercase; font-size: 11px; opacity: .85; }
+    header h1 { margin: 8px 0 0; font-size: 26px; }
+    main { max-width: 720px; margin: 0 auto; padding: 36px 48px 64px; }
+    h2 { font-size: 12px; letter-spacing: .16em; text-transform: uppercase; color: {{ partner.accent }}; }
+    table { width: 100%; border-collapse: collapse; font-size: 15px; }
+    th, td { text-align: left; padding: 8px 0; border-bottom: 1px solid #d5dbe3; }
+    td.num { text-align: right; font-variant-numeric: tabular-nums; }
+    .prose { font-size: 16px; line-height: 1.55; }
+    footer { margin-top: 40px; font-size: 12px; color: #5c6b7a; border-top: 1px solid #d5dbe3; padding-top: 16px; }
+  </style>
+</head>
+<body>
+  <header>
+    <p>{{ partner.name }} · {{ partner.jurisdiction }}</p>
+    <h1>{{ fund_name }}</h1>
+  </header>
+  <main>
+    <p class="prose">{{ prose }}</p>
+    <h2>Figures</h2>
+    <table>
+      <tr><th>Gross return</th><td class="num">{{ f("metrics.gross_return_bps", period=plan.period) }}</td></tr>
+      <tr><th>Net return</th><td class="num">{{ f("metrics.net_return_bps", period=plan.period) }}</td></tr>
+      <tr><th>Year-to-date net</th><td class="num">{{ f("metrics.ytd_return_bps", period=plan.period) }}</td></tr>
+      <tr><th>NAV</th><td class="num">{{ f("metrics.nav_usd_cents", fmt="usd", period=plan.period) }}</td></tr>
+      <tr><th>Sharpe, thirty-six months</th><td class="num">{{ f("metrics.sharpe_36m", fmt="ratio") }}</td></tr>
+      <tr><th>Maximum drawdown</th><td class="num">{{ f("metrics.max_drawdown_bps") }}</td></tr>
+      <tr><th>Management fee</th><td class="num">{{ f("terms.mgmt_fee_bps") }}</td></tr>
+      <tr><th>Performance fee</th><td class="num">{{ f("terms.perf_fee_bps") }}</td></tr>
+      <tr><th>Hurdle</th><td class="num">{{ f("terms.hurdle_bps") }}</td></tr>
+      <tr><th>Lockup, months</th><td class="num">{{ f("terms.lockup_months", fmt="int") }}</td></tr>
+      <tr><th>Notice, days</th><td class="num">{{ f("terms.notice_days", fmt="int") }}</td></tr>
+    </table>
+    <h2>Provenance</h2>
+    <table>
+      <tr><th>Field</th><th>Value</th><th>Page</th><th>Quote</th></tr>
+      {% for fact in binder.provenance() %}
+      <tr>
+        <td>{{ fact.field_path.value }}</td>
+        <td class="num">{{ binder.display(fact) }}</td>
+        <td class="num">{{ fact.page_no }}</td>
+        <td>{{ fact.quote }}</td>
+      </tr>
+      {% endfor %}
+    </table>
+    <footer>{{ disclosure }}</footer>
+  </main>
+</body>
+</html>
