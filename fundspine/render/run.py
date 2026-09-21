@@ -18,6 +18,7 @@ from fundspine.render.markers import substitute_markers
 from fundspine.render.partners import PARTNERS, PartnerConfig
 from fundspine.render.plan import plan_ic_memo, plan_partner_commentary
 from fundspine.render.prose import write_prose
+from fundspine.telemetry import tracer
 
 
 def _display(finding: DriftFinding) -> dict[str, str]:
@@ -32,12 +33,13 @@ def _display(finding: DriftFinding) -> dict[str, str]:
 
 def _finish_prose(raw: str, binder: FactBinder, disclosure: str) -> str:
     guarded = f"{raw} {disclosure}"
-    violations = validate_prose(
-        guarded,
-        binder,
-        disclosure=disclosure,
-        allowed_fact_ids=binder.allowed_fact_ids(),
-    )
+    with tracer().start_as_current_span("render.guard"):
+        violations = validate_prose(
+            guarded,
+            binder,
+            disclosure=disclosure,
+            allowed_fact_ids=binder.allowed_fact_ids(),
+        )
     if violations:
         codes = ", ".join(v.code.value for v in violations)
         raise RuntimeError(f"guard refused prose: {codes}")
@@ -47,7 +49,8 @@ def _finish_prose(raw: str, binder: FactBinder, disclosure: str) -> str:
 def _partner_html(partner: PartnerConfig, facts: tuple[Fact, ...], period: str) -> str:
     binder = FactBinder(facts)
     plan = plan_partner_commentary(period)
-    raw = write_prose(partner.tone, facts, period)
+    with tracer().start_as_current_span("render.prose"):
+        raw = write_prose(partner.tone, facts, period)
     prose = _finish_prose(raw, binder, partner.disclosure)
     fund_name = binder.f("fund.name")
     return render_partner_html(
@@ -64,7 +67,8 @@ def render_all(out_dir: Path | None = None) -> Path:
     dest.mkdir(parents=True, exist_ok=True)
     q1 = facts_from_golden("doc_1")
     q3 = facts_from_golden("doc_3")
-    findings = D101_restatement(q1, q3) + D103_terms_change(q1, q3)
+    with tracer().start_as_current_span("drift.evaluate"):
+        findings = D101_restatement(q1, q3) + D103_terms_change(q1, q3)
     blocked = blocking(findings)
 
     for partner in PARTNERS:
@@ -99,7 +103,8 @@ def render_all(out_dir: Path | None = None) -> Path:
         ic_binder.used_fact_ids.append(item.prior_fact.fact_id)
         ic_binder.used_fact_ids.append(item.new_fact.fact_id)
     ic_plan = plan_ic_memo("2026Q2")
-    ic_raw = write_prose(Tone.INSTITUTIONAL_TERSE, q3, "2026Q2")
+    with tracer().start_as_current_span("render.prose"):
+        ic_raw = write_prose(Tone.INSTITUTIONAL_TERSE, q3, "2026Q2")
     ic_disclosure = "Internal IC memorandum. Not for partner distribution while drift is open."
     ic_prose = _finish_prose(ic_raw, ic_binder, ic_disclosure)
     fund_name = ic_binder.f("fund.name")

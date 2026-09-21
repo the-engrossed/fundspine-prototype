@@ -132,3 +132,19 @@ def dump_scorecard(scores: list[DocScore], *, prompt_version: str) -> dict[str, 
             }
         )
     return {"prompt_version": prompt_version, "documents": documents}
+
+
+def regression_messages(current: dict[str, Any], baseline: dict[str, Any]) -> list[str]:
+    """Fail closed: any drop in citation, required recall, or exact matches is a regression."""
+    prior = {str(doc["stem"]): doc for doc in baseline["documents"]}
+    messages: list[str] = []
+    for doc in current["documents"]:
+        stem = str(doc["stem"])
+        if stem not in prior:
+            messages.append(f"{stem}: not present in baseline")
+            continue
+        old = prior[stem]
+        for key in ("citation_validity", "required_recall", "exact_matches"):
+            if doc[key] < old[key]:
+                messages.append(f"{stem} {key} {doc[key]} < baseline {old[key]}")
+    return messages

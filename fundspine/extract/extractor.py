@@ -14,6 +14,7 @@ from fundspine.extract.materialize import DroppedFact, materialize_facts
 from fundspine.extract.prompt import load_prompt
 from fundspine.extract.schema import LLMExtraction
 from fundspine.ingest.loader import Page
+from fundspine.telemetry import tracer
 
 
 @dataclass(frozen=True)
@@ -49,20 +50,26 @@ def extract_document(
     prompt_version = "v2"
     system = load_prompt(prompt_version, "extract")
     client = OpenAI(api_key=cfg.require_openai_key())
-    completion = client.beta.chat.completions.parse(
-        model=cfg.extract_model,
-        messages=[
-            {"role": "system", "content": system},
-            {"role": "user", "content": _user_message(pages)},
-        ],
-        response_format=LLMExtraction,
-    )
+    with tracer().start_as_current_span("extract.llm") as span:
+        span.set_attribute("gen_ai.system", "openai")
+        span.set_attribute("gen_ai.request.model", cfg.extract_model)
+        span.set_attribute("gen_ai.operation.name", "chat.completions.parse")
+        completion = client.beta.chat.completions.parse(
+            model=cfg.extract_model,
+            messages=[
+                {"role": "system", "content": system},
+                {"role": "user", "content": _user_message(pages)},
+            ],
+            response_format=LLMExtraction,
+        )
+        usage = completion.usage
+        tokens_in = 0 if usage is None else usage.prompt_tokens
+        tokens_out = 0 if usage is None else usage.completion_tokens
+        span.set_attribute("gen_ai.usage.input_tokens", tokens_in)
+        span.set_attribute("gen_ai.usage.output_tokens", tokens_out)
     parsed = completion.choices[0].message.parsed
     if parsed is None:
         raise RuntimeError("extractor returned no parsed payload")
-    usage = completion.usage
-    tokens_in = 0 if usage is None else usage.prompt_tokens
-    tokens_out = 0 if usage is None else usage.completion_tokens
     extractor_name = f"{cfg.extract_model}/{prompt_version}"
     facts, dropped = materialize_facts(
         parsed,

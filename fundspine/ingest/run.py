@@ -22,6 +22,7 @@ from fundspine.repo.store import (
     insert_document,
     insert_extraction_run,
 )
+from fundspine.telemetry import tracer
 from fundspine.validate.rules import R001_fee_bridge, R004_citation_valid
 from fundspine.validate.types import ValidationCtx
 
@@ -105,7 +106,8 @@ def ingest_golden(golden_dir: Path | None = None) -> None:
                 pages=parsed.pages,
                 terms=None,
             )
-            cite_hits = R004_citation_valid(ctx)
+            with tracer().start_as_current_span("validate.rules"):
+                cite_hits = R004_citation_valid(ctx)
             cite_failed = {v.fact_id for v in cite_hits if v.fact_id is not None}
             for fact in extraction.facts:
                 if fact.fact_id in cite_failed:
@@ -131,12 +133,13 @@ def ingest_golden(golden_dir: Path | None = None) -> None:
                 inception=inception,
             )
             terms = terms_in_force(session, fund_id, period)
-            fee_hits = R001_fee_bridge(ValidationCtx(
-                period=period,
-                facts=extraction.facts,
-                pages=parsed.pages,
-                terms=terms,
-            ))
+            with tracer().start_as_current_span("validate.rules"):
+                fee_hits = R001_fee_bridge(ValidationCtx(
+                    period=period,
+                    facts=extraction.facts,
+                    pages=parsed.pages,
+                    terms=terms,
+                ))
             violations = (*cite_hits, *fee_hits)
             dropped = len(extraction.dropped)
             print(

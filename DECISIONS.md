@@ -79,6 +79,22 @@ misses are Sharpe and max drawdown with `period` null (values are
 correct) plus `fund.share_class` on doc_3. R001 fires on doc_2 (40 bps).
 v2 is a new prompt file, not an edit of v1.
 
+## Block F — costs (Sun 20:30)
+
+**USD micros, published gpt-4o-2024-08-06 list price.** $2.50 / 1M in, $10 / 1M
+out. Prose is not billed. Whole-book math is 40 funds × 4 documents/year;
+partner packets share the extract. Assumptions print next to the number.
+
+**Five OTel spans to a JSONL file exporter:** extract.llm, validate.rules,
+drift.evaluate, render.prose, render.guard. No Jaeger.
+
+## Block G — CI (Sun 20:30)
+
+**CI is pytest + ruff + mypy.** No API key, no Postgres, no LLM. The
+scorecard gate is `evals/scorecards/baseline.json` floors plus
+`regression_messages`. Breaking a rule or the guard fails the board;
+degrading a prompt is `make eval` locally against the committed baseline.
+
 ## Block E — drift (Sun 18:50)
 
 **D101 keys on (field_path, period) and ignores standing terms

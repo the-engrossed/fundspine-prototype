@@ -8,10 +8,20 @@ from pathlib import Path
 from sqlalchemy import select
 
 from evals.golden.generate import GOLDEN_DIR
-from evals.scorecard import DocScore, ExtractedField, render_scorecard, score_document
+from evals.scorecard import (
+    DocScore,
+    ExtractedField,
+    dump_scorecard,
+    regression_messages,
+    render_scorecard,
+    score_document,
+)
+from fundspine.config import REPO_ROOT, settings
 from fundspine.ingest.loader import load_html_file
 from fundspine.repo.orm import Document, FactRow
 from fundspine.repo.session import TenantContext, session_scope
+
+BASELINE_PATH = REPO_ROOT / "evals" / "scorecards" / "baseline.json"
 
 
 def _load_extracted(stem: str) -> list[ExtractedField]:
@@ -59,6 +69,17 @@ def run_eval(golden_dir: Path | None = None) -> list[DocScore]:
 def main() -> int:
     scores = run_eval()
     print(render_scorecard(scores))
+    current = dump_scorecard(scores, prompt_version=settings().prompt_version)
+    if not BASELINE_PATH.is_file():
+        raise RuntimeError(f"missing {BASELINE_PATH}")
+    baseline = json.loads(BASELINE_PATH.read_text(encoding="utf-8"))
+    messages = regression_messages(current, baseline)
+    if messages:
+        print("REGRESSION vs evals/scorecards/baseline.json")
+        for message in messages:
+            print(f"  {message}")
+        return 1
+    print("no regression vs evals/scorecards/baseline.json")
     return 0
 
 
