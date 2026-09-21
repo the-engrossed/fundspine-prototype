@@ -46,7 +46,7 @@ def extract_document(
 ) -> Extraction:
     assert_single_tenant(fund_id, tuple(pages))
     cfg = settings()
-    prompt_version = cfg.prompt_version
+    prompt_version = "v2"
     system = load_prompt(prompt_version, "extract")
     client = OpenAI(api_key=cfg.require_openai_key())
     completion = client.beta.chat.completions.parse(

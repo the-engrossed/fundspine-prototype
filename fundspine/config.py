@@ -44,7 +44,7 @@ def settings() -> Settings:
         database_url=os.environ.get("FUNDSPINE_DATABASE_URL", DEFAULT_DATABASE_URL),
         extract_model=os.environ.get("FUNDSPINE_EXTRACT_MODEL", "gpt-4o-2024-08-06"),
         prose_model=os.environ.get("FUNDSPINE_PROSE_MODEL", "gpt-4o-2024-08-06"),
-        prompt_version=os.environ.get("FUNDSPINE_PROMPT_VERSION", "v1"),
+        prompt_version=os.environ.get("FUNDSPINE_PROMPT_VERSION", "v2"),
         schema_version="1",
         out_dir=REPO_ROOT / "out",
         trace_dir=REPO_ROOT / "traces",
