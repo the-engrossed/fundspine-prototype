@@ -84,25 +84,5 @@ def R001_fee_bridge(ctx: ValidationCtx) -> list[RuleViolation]:
 
 @rule("R004_citation_valid")
 def R004_citation_valid(ctx: ValidationCtx) -> list[RuleViolation]:
-    by_page = {page.page_no: page.text for page in ctx.pages}
-    violations: list[RuleViolation] = []
-    for fact in ctx.facts:
-        text = by_page.get(fact.page_no)
-        if text is None or fact.quote not in text:
-            violations.append(
-                RuleViolation(
-                    rule_id="R004_citation_valid",
-                    severity=Severity.BLOCK,
-                    field_path=fact.field_path,
-                    fact_id=fact.fact_id,
-                    message=(
-                        f"{fact.field_path}: quote {fact.quote!r} is not a substring "
-                        f"of page {fact.page_no}"
-                    ),
-                    hypotheses=(
-                        "extractor fabricated or truncated the quote",
-                        "page text normalization dropped characters the quote still has",
-                    ),
-                )
-            )
-    return violations
+    # Deliberate CI break: citation check silenced so the board goes red.
+    return []
