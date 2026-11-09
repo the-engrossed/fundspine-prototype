@@ -1,8 +1,6 @@
-# FundSpine — Build Spec & 72-Hour Execution Plan
+# FundSpine — Architecture of record
 
 **Author context:** Tanmai Komatireddy | Fund-document reporting prototype
-**Submit by:** Friday, September 18, 2026, 3:00 PM ET
-**Call with Nik Vrudhula (Chief of Staff & Agents):** Wednesday, September 23, 2026
 
 ---
 
@@ -21,8 +19,7 @@ got cut (see §7).
 
 ### Why this shape and not the obvious shape
 
-The obvious shape is "RAG over fund PDFs + LLM writes the memo." That fails for three reasons
-you should be able to state in one breath:
+The obvious shape is "RAG over fund PDFs + LLM writes the memo." That fails for three reasons:
 
 1. **Vector retrieval destroys numeric context.** Chunking splits an 18% net return from the
    footnote that says returns are gross of a 20% performance fee. Cosine similarity has no
@@ -34,9 +31,8 @@ you should be able to state in one breath:
    Advisers Act problem.
 
 So: **retrieval serves prose. SQL serves numbers.** RAG is a subcomponent, not the
-architecture. That single sentence is your strongest differentiator against the other 84
-applicants, because the job spec asked for "RAG-based intelligence systems" and you are
-delivering something strictly stronger while explaining why.
+architecture. Embeddings retrieve narrative text; every figure in a client artifact is
+resolved from a validated relational record.
 
 ---
 
@@ -140,7 +136,7 @@ fundspine/
 ## 2. Schema
 
 Postgres. Pydantic mirrors it at the boundary. Alembic-migrated from commit one — an
-un-migrated schema in a repo you are submitting as a senior artifact is a tell.
+un-migrated schema means the model was never exercised.
 
 ### 2.1 The three design decisions that carry the whole system
 
@@ -149,8 +145,7 @@ A correction never mutates a row. It inserts a new `fact` and marks the prior
 `status = 'superseded'` with `superseded_by`. Reason: **restatements are normal in alternatives.**
 A manager reports an estimated NAV on the 15th and a final NAV on the 30th. If you `UPDATE`,
 you have destroyed the evidence that the number moved — which is exactly the signal an
-allocator wants. This is the highest-value domain detail in the build. Say the word
-"restatement" on the Loom.
+allocator wants. This is the highest-value domain detail in the build.
 
 **Decision 2 — Terms are effective-dated.**
 `mgmt_fee_bps` is not a column on `fund`. Fees, hurdles, lockups, and gates change. A Q2 memo
@@ -180,17 +175,17 @@ schema constraint, not a convention.
 | `drift_event` | Typed anomaly | `kind`, `severity`, `rule_id`, `prior_value`, `new_value`, `fact_id`, `status`, `hypotheses` jsonb, `notes` |
 | `chunk` / `embedding` | pgvector, **prose only** | narrative sections for retrieval. Never the source of a number. |
 
-### 2.3 Multi-tenancy — the trap they will probe
+### 2.3 Multi-tenancy
 
 White-label means **Partner A's data must never appear in Partner B's context, including
 inside a prompt.** Two enforcement points:
 
 1. `repo/session.py` — session factory requires an explicit `tenant_ctx`. There is no way to
    get a session without one. Postgres RLS policies on `partner*` and `artifact` are written
-   in the migration even if you do not fully exercise them in 72 hours.
+   in the migration even if they are not fully exercised in this prototype.
 2. `render/prose.py` — the prose call receives a `SectionPlan` already scoped to one partner.
    Assert on `partner_id` uniqueness of every fact in the payload before the call. **A prompt
-   is an exfiltration surface.** Say that sentence. Almost no candidate does.
+   is an exfiltration surface.**
 
 ### 2.4 Skeleton — you implement the bodies
 
@@ -230,9 +225,8 @@ class FundPeriodMetrics(BaseModel):
     #   the bug will live.
 ```
 
-**Store money and rates as integer basis points and integer cents.** Never float. If Nik's
-call goes anywhere near numbers, "I don't hold financial values in floats" is a two-second
-credibility deposit.
+**Store money and rates as integer basis points and integer cents.** Never float.
+A financial value is an integer from the moment it leaves the page.
 
 ---
 
@@ -269,11 +263,10 @@ def rule(rule_id: str, severity: str, tolerance: str = "0"):
 | `R004_citation_valid` | `fact.quote` is a verbatim substring of page `fact.page_no` | block | Programmatic hallucination detection. Brutal and cheap. |
 | `R005_weights_sum` | sleeve allocations sum to 10000 bps | block | Trivial, but it is the one that would actually fire in production |
 
-**The honest framing for the Loom:** a violation cannot distinguish "the model misread the
+**The honest framing:** a violation cannot distinguish "the model misread the
 table" from "the manager's own reporting is internally inconsistent." Both happen; the second
 is *more valuable* to surface. So `RuleViolation` carries a `hypotheses` field with both, and
-routes to a human. Do not pretend the system knows which. Saying "I can't disambiguate these
-two and here's why that's still useful" is a senior move.
+routes to a human. Do not pretend the system knows which.
 
 ---
 
@@ -365,7 +358,7 @@ sentence that ends the reliability conversation.
 `tone` is a **small enum** (`institutional_terse`, `advisory_warm`, `educational`), each mapped
 to a fixed instruction block and few-shot pair. Not freeform per-partner prompt text.
 Freeform tone strings are unversioned, untestable, and drift toward compliance problems.
-Enumerated tone is testable in the eval harness. Say why you chose the constraint.
+Enumerated tone is testable in the eval harness.
 
 `disclosure_block_md` is appended verbatim by the renderer, keyed on
 `partner.jurisdiction`, never LLM-touched, and G4-verified.
@@ -383,9 +376,8 @@ Enumerated tone is testable in the eval harness. Say why you chose the constrain
 | Disclosures | none | verbatim, jurisdiction-keyed |
 | Tone | terse, hedged | partner's `tone` enum |
 
-Generate both **side by side in the Loom** and hover a number in each to show the same
-`fact_id`. That is the four-second moment that makes the architecture self-evident without
-narration.
+Render both side by side and resolve a number in each to the same `fact_id`. That makes
+the architecture self-evident: identical figures, different brand.
 
 ---
 
@@ -401,18 +393,16 @@ Two layers. Layer one already exists (§3, intra-document). Layer two is inter-p
 | `D104_strategy_drift` | this period's strategy narrative diverges from baseline | cosine distance on section embedding vs. rolling baseline | review |
 | `D105_reporting_late` | document arrived later than manager's own historical cadence | day-lag vs. trailing median | info |
 
-### Two things to say out loud
+### Two points
 
 **Why MAD, not standard deviation.** Hedge fund returns are fat-tailed and skewed. Mean/σ gets
 dragged by the very outlier you are trying to detect, so σ-based bands under-flag exactly when
-it matters. Median/MAD is robust. This is a one-sentence answer that tells an investment team
-you are not naive about their data — Itay will register it instantly if he ever joins a call.
+it matters. Median/MAD is robust.
 
 **`D104` is the weakest component in the build.** Embedding distance on strategy prose is a
 soft signal with an arbitrary threshold and no labeled ground truth. Style drift is the real
-fund-of-funds risk, so it is worth *gesturing* at, but say plainly: "this one is a heuristic I
-would want to validate against labeled historical cases before anyone trusts it." Volunteering
-the weakest link is worth more than five working features.
+fund-of-funds risk, so it is worth including, but it is a heuristic to validate against
+labeled historical cases before anyone trusts it.
 
 ### Routing is the part that matters
 
@@ -454,27 +444,22 @@ inventing names, plus a namespaced domain set:
 `fundspine.schema_version` · `fundspine.facts_extracted` · `fundspine.facts_rejected` ·
 `fundspine.rules_failed` · `fundspine.guard_violations` · `fundspine.retry_count` · `fundspine.cost_usd`
 
-Using the standard conventions instead of homegrown attribute names is a small signal that you
-live in this ecosystem rather than having read one blog post about it.
+Use the standard conventions instead of homegrown attribute names.
 
 ### 6.2 Unit economics — do not skip this
 
 Instrument and display: **cost and latency per document, and per partner artifact.**
 
-Then put a real number on screen in the Loom: *"$0.0X and Y seconds per manager document;
-$0.XX and Z seconds per partner packet."*
+Report a real number: cost and latency per manager document, and per partner packet.
+The operating question is cost per client per quarter, answered from the spans rather
+than from a separate estimate.
 
-Tory is a CEO scaling from 1 to 7 white-label clients. The question in his head is "what does
-this cost per client per quarter." Almost no engineering candidate can answer a unit-economics
-question from their own telemetry. You can, because you built the spans. This single slide may
-matter more to the founders than the architecture diagram.
+### 6.3 The eval harness
 
-### 6.3 The eval harness — the most senior artifact in the submission
-
-**Golden set: 10 synthetic documents you author, with ground-truth JSON.** Build these
-**first**, tonight, before the extractor. Ground truth before implementation forces the schema
-to be decided by what actually needs extracting, and it means you are never tuning against
-vibes.
+**Golden set: 10 synthetic documents, with ground-truth JSON.** Build these
+**first**, before the extractor. Ground truth before implementation forces the schema
+to be decided by what actually needs extracting, and it means the extractor is never tuned
+against vibes.
 
 Include these adversarial cases deliberately:
 
@@ -501,9 +486,8 @@ Include these adversarial cases deliberately:
 | Cross-tenant leak | G3 violations | **0%** |
 | Prose faithfulness | LLM-as-judge, 1–5 | **secondary signal only** |
 
-Be explicit in the README and on camera: **LLM-as-judge grades prose quality; deterministic
-checks grade numbers.** Candidates who use a judge to validate arithmetic reveal that they do
-not understand what they built. Naming the boundary shows you do.
+Be explicit: **LLM-as-judge grades prose quality; deterministic checks grade numbers.**
+A judge must not be used to validate arithmetic.
 
 **`make eval` → committed scorecard + CI gate.**
 
@@ -518,18 +502,15 @@ def main() -> int:
     """
 ```
 
-Commit the scorecard history. Then, in the Loom, **show a scorecard diff where the eval caught
-a regression you introduced.** A green board proves nothing. An eval that caught you being
-wrong proves the harness is real. This is the moment that separates you from every other
-applicant, because prompts-as-tested-versioned-software is precisely the discipline the market
-is still missing.
+Commit the scorecard history, including a diff where the eval caught a regression that
+was introduced on purpose. A green board proves nothing. An eval that caught a regression
+proves the harness is real. Prompts are tested, versioned software.
 
 ---
 
 ## 7. Scope: what is IN, what is CUT
 
-You have roughly 14 working hours before Friday afternoon, plus a day job you must keep quiet
-at. Ruthlessness now is the whole game.
+The spine below is in scope. Everything else in this section is a cut.
 
 ### IN — the spine, non-negotiable
 
@@ -538,83 +519,67 @@ validated record → 2 drift detectors minimum (`D101`, `D103`) with blocking �
 render with the guard → OTel traces with cost/latency → 10-doc golden set → `make eval`
 scorecard with a caught regression.
 
-### CUT — and say each one out loud on camera
+### CUT
 
-| Cut | Say this |
+| Cut | Why |
 |---|---|
-| Next.js / TypeScript UI | "Deliberately a FastAPI + server-rendered page. I put the 72 hours into the data spine, not the surface." |
-| Auth, full RLS enforcement | Schema + policies written, tenant-context seam visible. "RLS goes here; I didn't exercise it in three days." |
-| Real manager documents | Synthetic, and **say why**: using a real fund's letter in a demo is a compliance smell. Mentioning that awareness scores. |
-| Agent framework (LangChain / LangGraph) | "Explicit control flow and a hand-rolled state machine. At this scale a graph framework adds indirection and removes the ability to reason about failure." Be ready to defend it — it is the correct call and they will test whether you hold it. |
-| GCP deployment | Docker Compose locally. **Diagram** the GCP mapping in the README (Cloud Run workers, Pub/Sub decoupling ingest from extraction, Cloud SQL, GCS for raw artifacts). Do not attempt a deploy — that is where eight hours vanish. |
+| Next.js / TypeScript UI | FastAPI plus server-rendered HTML. The time goes into the data spine, not the surface. |
+| Auth, full RLS enforcement | Schema and the tenant-context seam are in place. RLS is the production step and is not exercised here. |
+| Real manager documents | Synthetic, because using a real fund's letter in a demo is a compliance problem. |
+| Agent framework (LangChain / LangGraph) | Explicit control flow. At this scale a graph framework adds indirection and removes the ability to reason about failure. |
+| GCP deployment | Docker Compose locally. Diagram the GCP mapping in the README (Cloud Run workers, Pub/Sub decoupling ingest from extraction, Cloud SQL, GCS for raw artifacts). A live deploy is out of scope. |
 | Multi-provider fallback routing | One provider. Fallback is a distraction at prototype stage. |
-| pgvector / `D104` | **First thing to cut if Thursday slips.** Least load-bearing, most expected. |
+| pgvector / `D104` | First thing to drop if the schedule slips. Least load-bearing. |
 
-### The cut priority if Thursday collapses
+### Cut priority if the schedule slips
 
 Drop in this order: `D104` → pgvector → PDF rendering (ship clean HTML) → `D105` → the second
-drift *demo* period.
+drift period.
 
-**Never cut:** citation-bound facts, the guard, or the eval scorecard. Those three *are* the
-differentiator. Everything else is table stakes.
+**Never cut:** citation-bound facts, the guard, or the eval scorecard. Those three are the
+core. Everything else can wait.
 
 ---
 
-## 8. The 72-hour schedule
+## 8. Build order
 
-### Tuesday night (2h — tonight)
+### First
 
 - `docker-compose` up with Postgres; `alembic init`; first migration with the real schema
 - `domain/models.py` — `Fact`, `FundPeriodMetrics`, `Terms`, enums, typed ids
 - **Author golden docs 1–3 with ground-truth JSON.** Ground truth before extractor. Non-negotiable.
 - Gate: `make up && make migrate` clean, three golden docs on disk with truth files
 
-### Wednesday (5–6h)
+### Next
 
 - `ingest/` — sha256 idempotency, page split, table parse
 - `extract/extractor.py` — structured output → `Fact[]` with page + quote. Prompt in `prompts/v1/`
 - `validate/` — the 5 rules + engine + `RuleViolation` with `hypotheses`
 - `repo/facts.py` — append-only persistence, supersede path
 - `evals/run_eval.py` — field-level scorecard, citation validity
-- Gate, end of Wednesday: **one document → validated facts → passing scorecard printed to terminal.** If you do not hit this, cut `D104`, pgvector, and PDF now rather than Thursday night.
+- Gate: **one document → validated facts → passing scorecard printed to terminal.** If this is not in place, cut `D104`, pgvector, and PDF before adding surface area.
 
-### Thursday (5–6h)
+### Then
 
 - `render/` — plan, binder, templates, prose, guard. Both renderers.
 - `drift/` — `D101`, `D103`, router with blocking
 - `obs/tracing.py` — spans end to end, cost/latency per doc and per artifact, Jaeger up
 - Golden docs 4–10, including the restatement and fee-change cases
 - Introduce a deliberate prompt regression, capture the scorecard diff, revert
-- Gate, end of Thursday: two periods ingested, both artifacts rendered, one blocking drift
-  event, trace waterfall screenshot, cost/latency numbers, scorecard diff captured
+- Gate: two periods ingested, both artifacts rendered, one blocking drift
+  event, trace waterfall, cost/latency numbers, scorecard diff captured
 
-### Friday morning (2h)
+### Close-out
 
 - README: architecture diagram, the thesis (§0), GCP mapping diagram, and an explicit
-  **"What I did not build, and why"** section. That section is a strength signal, not a
-  disclaimer.
+  **"What I did not build, and why"** section.
 - Repo hygiene: zero notebooks, full type hints, `ruff` + `mypy` clean, `make` targets work
-  from a cold clone. Nik or whoever they route the repo to will try `make up`. It must work.
+  from a cold clone. `make up` has to succeed on a machine that has never seen the repo.
 - Commit the scorecard history.
-
-### Friday midday (2h) — record and submit
-
-**Two takes maximum.** Shot list, ~4 minutes:
-
-| Time | Shot |
-|---|---|
-| 0:00–0:45 | Hypothesis framing (from the previous session's opener — hedged, evidence-based, invites correction) |
-| 0:45–1:45 | Live run. Ingest a manager letter. **Click a number in the output → page, bbox, verbatim quote.** Provenance in one gesture. |
-| 1:45–2:30 | Both artifacts side by side. Same `fact_id`, different brand, different audience, disclosures verbatim. |
-| 2:30–3:05 | Ingest the next period. Restatement fires. Partner artifact generation **refuses**. Show why. |
-| 3:05–3:45 | Trace waterfall → cost and latency per document and per packet → eval scorecard diff catching the regression. |
-| 3:45–4:00 | Close: the one weakest component named honestly (`D104`), and the question you want answered on the 23rd — inbound extraction or outbound partner generation. |
-
-**Submit by 3:00 PM ET Friday.** It lands in Nik's Friday afternoon, not his weekend inbox.
 
 ---
 
-## 9. The four questions you will be asked, and the answers
+## 9. Design questions
 
 **"Why not just RAG over the documents?"**
 Retrieval serves prose; SQL serves numbers. Chunking splits a return from the footnote that
@@ -640,14 +605,11 @@ the page it cites.
 labeled ground truth. Style drift is the real risk in a fund-of-funds, so it belongs in the
 design, but I would not let anyone act on that signal until it was validated against labeled
 historical cases. Second weakest: I ran this on synthetic documents, so the failure modes I
-hardened against are the ones I imagined, not the ones your managers actually produce.
+hardened against are the ones I imagined, not the ones a live set of managers would produce.
 
 ---
 
 ## 10. Standing rule
 
-0 expectation. 100% execution. 0 regrets.
-
-Do not spend Wednesday redesigning the schema. The spec is decided; the terminal is where the
-next 14 hours belong. If something in here is wrong, you will find out by building it, not by
-thinking about it harder.
+Do not reopen the schema once implementation has started. The spec is decided. If something
+in here is wrong, you will find out by building it, not by thinking about it harder.

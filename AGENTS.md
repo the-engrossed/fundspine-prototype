@@ -60,7 +60,7 @@ Do not add: LangChain, LangGraph, LlamaIndex or any agent framework — control 
 explicit and that is a deliberate position. No authentication, user accounts, or JavaScript
 frontend. No PDF output. No Jaeger container; OTel spans go to a file exporter.
 
-Do not build anything that is not in plan_36h.md. If it looks like a twenty-minute
+Do not widen the build. If it looks like a twenty-minute
 addition, it is not in scope. Ask first.
 
 Hand-written — do not modify these

@@ -128,10 +128,9 @@ API key, no LLM calls, no flake, runs in under a minute.
 
 The regression demo splits in two:
 
-- **Break a rule or the guard** → CI fails. Deterministic. That is the screenshot.
+- **Break a rule or the guard** → CI fails. Deterministic.
 - **Degrade an extraction prompt** → `make eval` locally; field recall and
-  citation validity drop in the terminal. That belongs on camera, not in a
-  CI log.
+  citation validity drop in the terminal. That is a local eval, not a CI log.
 
 ## What I did not build, and why
 

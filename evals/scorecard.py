@@ -104,7 +104,7 @@ def render_scorecard(scores: list[DocScore]) -> str:
 
 
 def dump_scorecard(scores: list[DocScore], *, prompt_version: str) -> dict[str, Any]:
-    """JSON shape for committed scorecard history and Loom diffs."""
+    """JSON shape for committed scorecard history and scorecard diffs."""
     documents: list[dict[str, Any]] = []
     for score in scores:
         exact_hits = sum(1 for ok in score.exact.values() if ok)
