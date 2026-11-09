@@ -3,7 +3,7 @@
 Retrieval serves prose. SQL serves numbers. No figure reaches a client-facing
 document except through a fact ID with a page and a verbatim quote behind it.
 
-That is a schema constraint, not a convention. Equi is scaling white-label
+That is a schema constraint, not a convention. Allocators are scaling white-label
 delivery faster than a human can assemble packets, and fund managers restate
 numbers. This weekend prototype is the spine that makes both of those
 survivable: **document in → cited facts → validated record → per-partner

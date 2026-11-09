@@ -1,6 +1,6 @@
 # FundSpine — Build Spec & 72-Hour Execution Plan
 
-**Author context:** Tanmai Komatireddy | Target: Equi, Founding Engineer & Applied AI Lead
+**Author context:** Tanmai Komatireddy | Fund-document reporting prototype
 **Submit by:** Friday, September 18, 2026, 3:00 PM ET
 **Call with Nik Vrudhula (Chief of Staff & Agents):** Wednesday, September 23, 2026
 
@@ -374,12 +374,12 @@ Enumerated tone is testable in the eval harness. Say why you chose the constrain
 
 | | `ic_memo` (internal) | `partner_commentary` (white-label) |
 |---|---|---|
-| Audience | Equi investment team | The RIA's HNW client |
+| Audience | Internal investment team | The RIA's HNW client |
 | Numbers | identical | identical |
 | Open drift events | all, ranked | none |
 | Rejected/low-confidence facts | shown with confidence | excluded entirely |
 | Provenance | inline page + quote on every figure | footnoted source statement |
-| Branding | Equi | partner logo, palette, wordmark |
+| Branding | Platform house style | partner logo, palette, wordmark |
 | Disclosures | none | verbatim, jurisdiction-keyed |
 | Tone | terse, hedged | partner's `tone` enum |
 
@@ -450,9 +450,9 @@ Attributes — use the **OTel GenAI semantic conventions** where they exist
 (`gen_ai.request.model`, `gen_ai.usage.input_tokens`, `gen_ai.usage.output_tokens`) rather than
 inventing names, plus a namespaced domain set:
 
-`equi.fund_id` · `equi.partner_id` · `equi.doc_type` · `equi.prompt_version` ·
-`equi.schema_version` · `equi.facts_extracted` · `equi.facts_rejected` ·
-`equi.rules_failed` · `equi.guard_violations` · `equi.retry_count` · `equi.cost_usd`
+`fundspine.fund_id` · `fundspine.partner_id` · `fundspine.doc_type` · `fundspine.prompt_version` ·
+`fundspine.schema_version` · `fundspine.facts_extracted` · `fundspine.facts_rejected` ·
+`fundspine.rules_failed` · `fundspine.guard_violations` · `fundspine.retry_count` · `fundspine.cost_usd`
 
 Using the standard conventions instead of homegrown attribute names is a small signal that you
 live in this ecosystem rather than having read one blog post about it.
